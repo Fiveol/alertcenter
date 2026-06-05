@@ -3,6 +3,7 @@
   "name": "Alert Center",
   "codeowners": ["@Fiveol"],
   "config_flow": true,
+  "dependencies": ["frontend", "http"],
   "documentation": "https://github.com/Fiveol/alertcenter",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/Fiveol/alertcenter/issues",
