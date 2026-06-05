@@ -1,0 +1,3 @@
+resources:
+  - url: /local/community/alertcenter/alert-center-card.js
+    type: module
