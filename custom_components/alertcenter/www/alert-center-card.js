@@ -2,7 +2,7 @@
  * Alert Center Card
  */
 
-class AlertCenterCard extends HTMLElement {
+class AlertCenterCard extends window.HTMLElement {
   setConfig(config) {
     this.config = config;
   }
@@ -29,8 +29,9 @@ class AlertCenterCard extends HTMLElement {
   }
 }
 
-if (!customElements.get('alert-center-card')) {
-  customElements.define('alert-center-card', AlertCenterCard);
+const registry = window.customElements;
+if (!registry.get('alert-center-card')) {
+  registry.define('alert-center-card', AlertCenterCard);
 }
 
 window.customCards = window.customCards || [];
