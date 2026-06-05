@@ -1,6 +1,7 @@
 """Alert Center integration for Home Assistant."""
 
 import logging
+import voluptuous as vol  # <-- Add this import
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -58,9 +59,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         handle_notify_service,
         schema=cv.make_entity_service_schema(
             {
-                cv.Required("message"): cv.string,
-                cv.Optional("title"): cv.string,
-                cv.Optional("devices"): [cv.string],
+                vol.Required("message"): cv.string,  # <-- Changed cv to vol
+                vol.Optional("title"): cv.string,  # <-- Changed cv to vol
+                vol.Optional("devices"): [cv.string],  # <-- Changed cv to vol
             }
         ),
     )
