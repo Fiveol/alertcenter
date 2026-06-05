@@ -6,5 +6,16 @@
   "documentation": "https://github.com/Fiveol/alertcenter",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/Fiveol/alertcenter/issues",
-  "version": "0.0.1"
+  "version": "0.0.1",
+  "frontend": {
+    "javascript_type": "module",
+    "source": "www/alert-center-card.js"
+  },
+  "cards": [
+    {
+      "type": "alert-center-card",
+      "name": "Alert Center Card",
+      "description": "A simple Alert Center Lovelace card"
+    }
+  ]
 }
