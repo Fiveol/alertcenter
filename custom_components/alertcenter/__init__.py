@@ -1,17 +1,14 @@
 """Alert Center integration for Home Assistant."""
 
-import json
 import logging
-from pathlib import Path
 
-from homeassistant.components.frontend import add_extra_js_url
-from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 
 from .const import DOMAIN, NAME
+from .websocket_api import async_register_websocket_commands
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -22,29 +19,10 @@ PLATFORMS = [Platform.SENSOR]
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up Alert Center integration once per HA instance."""
-    static_dir = Path(__file__).parent / "www"
-    card_path = "/alertcenter/alert-center-card.js"
-    js_file = static_dir / "alert-center-card.js"
+    # Register websocket commands for the sidebar panel
+    async_register_websocket_commands(hass)
 
-    if not js_file.is_file():
-        _LOGGER.error("Card JS file not found at %s", js_file)
-
-    manifest_path = Path(__file__).parent / "manifest.json"
-    raw = await hass.async_add_executor_job(manifest_path.read_text)
-    version = json.loads(raw).get("version", "0")
-
-    await hass.http.async_register_static_paths(
-        [
-            StaticPathConfig(
-                url_path=card_path,
-                path=str(js_file),
-                cache_headers=False,
-            )
-        ]
-    )
-    add_extra_js_url(hass, f"{card_path}?v={version}")
-    _LOGGER.info("Registered Alert Center card resource at %s", card_path)
-
+    _LOGGER.info("Alert Center integration setup complete")
     return True
 
 
@@ -54,6 +32,38 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {}
+
+    # Register the alertcenter_notify service
+    async def handle_notify_service(call):
+        """Handle the alertcenter_notify service."""
+        message = call.data.get("message", "Alert")
+        title = call.data.get("title", NAME)
+        devices = call.data.get("devices", [])
+
+        if not devices:
+            _LOGGER.warning("alertcenter_notify called without devices")
+            return
+
+        # Send to each device
+        for device_id in devices:
+            await hass.services.async_call(
+                "notify",
+                device_id.split(".")[-1] if "." in device_id else device_id,
+                {"message": message, "title": title},
+            )
+
+    hass.services.async_register(
+        DOMAIN,
+        "notify",
+        handle_notify_service,
+        schema=cv.make_entity_service_schema(
+            {
+                cv.Required("message"): cv.string,
+                cv.Optional("title"): cv.string,
+                cv.Optional("devices"): [cv.string],
+            }
+        ),
+    )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
