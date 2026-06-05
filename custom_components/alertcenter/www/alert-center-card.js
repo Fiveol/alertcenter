@@ -2,22 +2,44 @@
  * Alert Center Card
  */
 
-class AlertCenterCard extends window.HTMLElement {
+class AlertCenterCard extends HTMLElement {
+  constructor() {
+    super();
+    this.content = null;
+  }
+
   setConfig(config) {
-    this.config = config;
+    this.config = config || {};
   }
 
   set hass(hass) {
+    if (!hass) return;
+    
     this.hass = hass;
     if (!this.content) {
-      const card = document.createElement('ha-card');
-      card.header = 'Alert Center';
-      this.content = document.createElement('div');
-      this.content.style.padding = '16px';
-      card.appendChild(this.content);
-      this.appendChild(card);
+      this._createCard();
     }
-    this.content.innerHTML = '<p>Alert Center Card</p>';
+  }
+
+  _createCard() {
+    const card = document.createElement('ha-card');
+    card.header = 'Alert Center';
+    
+    this.content = document.createElement('div');
+    this.content.style.padding = '16px';
+    
+    const message = document.createElement('p');
+    message.textContent = 'Alert Center Card';
+    
+    this.content.appendChild(message);
+    card.appendChild(this.content);
+    
+    // Clear previous content
+    while (this.firstChild) {
+      this.removeChild(this.firstChild);
+    }
+    
+    this.appendChild(card);
   }
 
   getCardSize() {
@@ -25,20 +47,20 @@ class AlertCenterCard extends window.HTMLElement {
   }
 
   static getStubConfig() {
-    return {};
+    return { title: 'Alert Center' };
   }
 }
 
-const registry = window.customElements;
-if (!registry.get('alert-center-card')) {
-  registry.define('alert-center-card', AlertCenterCard);
-}
+// Register the custom element
+customElements.define('alert-center-card', AlertCenterCard);
 
+// Register with HA's custom cards list
 window.customCards = window.customCards || [];
-if (!window.customCards.some((c) => c.type === 'alert-center-card')) {
-  window.customCards.push({
-    type: 'alert-center-card',
-    name: 'Alert Center Card',
-    description: 'A simple Alert Center card',
-  });
-}
+window.customCards.push({
+  type: 'alert-center-card',
+  name: 'Alert Center Card',
+  description: 'A simple Alert Center card',
+  preview: false,
+  documentationURL: 'https://github.com/Fiveol/alertcenter'
+});
+
